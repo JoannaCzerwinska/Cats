@@ -1,20 +1,23 @@
 package com.example.cats
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
+import retrofit2.awaitResponse
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         const val BASE_URL = "https://api.thecatapi.com/"
+        const val TAG = "MainActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,28 +34,32 @@ class MainActivity : AppCompatActivity() {
             .build()
             .create(ApiService::class.java)
 
-        val retrofitData = retrofitBuilder.getBreedNames()
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = retrofitBuilder.getBreedNames().awaitResponse()
+                if (response.isSuccessful){
+                    val responseData = response.body()!!
+                    val myStringBuilder = StringBuilder()
+                    Log.d(TAG, responseData.toString())
 
-        retrofitData.enqueue(object : Callback<List<BreedsItem>?> {
-            override fun onResponse(
-                call: Call<List<BreedsItem>?>,
-                response: Response<List<BreedsItem>?>
-            ) {
-                val responseBody = response.body()!!
-                val myStringBuilder = StringBuilder()
+                    withContext(Dispatchers.Main){
+                        for (data in responseData){
+                            myStringBuilder.append(data.name)
+                            myStringBuilder.append("\n")
+                        }
 
-                for (data in responseBody){
-                    myStringBuilder.append(data.name)
-                    myStringBuilder.append("\n")
+                        findViewById<TextView>(R.id.breedName).text = myStringBuilder
+                    }
                 }
-
-                // use synthetic binding; if not enabled add 'kotlin-android-extensions' - HAS BEEN DEPRECATED
-                findViewById<TextView>(R.id.breedName).text = myStringBuilder
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Looks like something went wrong",
+                        Toast.LENGTH_SHORT
+                    )
+                }
             }
-
-            override fun onFailure(call: Call<List<BreedsItem>?>, t: Throwable) {
-                Log.d(TAG, "onFailure" + t.message)
-            }
-        })
+        }
     }
 }
