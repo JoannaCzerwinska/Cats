@@ -2,9 +2,11 @@ package com.example.cats
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,16 +41,22 @@ class MainActivity : AppCompatActivity() {
                 val response = retrofitBuilder.getBreedNames().awaitResponse()
                 if (response.isSuccessful){
                     val responseData = response.body()!!
-                    val myStringBuilder = StringBuilder()
                     Log.d(TAG, responseData.toString())
 
-                    withContext(Dispatchers.Main){
-                        for (data in responseData){
-                            myStringBuilder.append(data.name)
-                            myStringBuilder.append("\n")
-                        }
+                    val imageUrl = responseData[0].image.url
+                    val breedName = responseData[0].name
+                    val myStringBuilder = StringBuilder()
 
-                        findViewById<TextView>(R.id.breedName).text = myStringBuilder
+                    withContext(Dispatchers.Main){
+                        Picasso.with(baseContext).load(imageUrl).into(findViewById<ImageView>(R.id.catImage))
+                        findViewById<TextView>(R.id.breedName).text = breedName
+
+//                        for (data in responseData){
+//                            myStringBuilder.append(data.name)
+//                            myStringBuilder.append("\n")
+//                        }
+
+//                        findViewById<TextView>(R.id.breedName).text = myStringBuilder
                     }
                 }
             } catch (e: Exception) {
