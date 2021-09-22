@@ -1,5 +1,6 @@
-package com.example.cats
+package com.example.cats.api
 
+import com.example.cats.model.BreedsItem
 import retrofit2.Response
 import retrofit2.http.GET
 

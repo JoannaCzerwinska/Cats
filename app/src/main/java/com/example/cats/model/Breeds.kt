@@ -1,3 +1,3 @@
-package com.example.cats
+package com.example.cats.model
 
 class Breeds : ArrayList<BreedsItem>()

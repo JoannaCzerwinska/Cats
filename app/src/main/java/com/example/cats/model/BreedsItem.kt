@@ -1,4 +1,4 @@
-package com.example.cats
+package com.example.cats.model
 
 data class BreedsItem(
     val adaptability: Int,
