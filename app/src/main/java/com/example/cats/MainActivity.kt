@@ -2,20 +2,25 @@ package com.example.cats
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.squareup.picasso.Picasso
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
-import retrofit2.awaitResponse
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
+
+    // lateinit var will be set when onCreate is called (not when main activity is initialised)
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var breedsAdapter: BreedAdapter
+    private lateinit var api: ApiService
+
+    private var breeds: ArrayList<BreedsItem> = arrayListOf()
 
     companion object {
         const val BASE_URL = "https://api.thecatapi.com/"
@@ -26,48 +31,67 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        getBreedName()
+        recyclerView = findViewById(R.id.breedsList)
+
+        breedsAdapter = BreedAdapter(breeds)
+
+        // responsible for measuring and positioning item views
+        recyclerView.layoutManager =
+            LinearLayoutManager(applicationContext, LinearLayoutManager.VERTICAL, false)
+
+        recyclerView.adapter = breedsAdapter
+
+        setUpRetrofit()
+        getBreedNames()
     }
 
-    private fun getBreedName() {
-        val retrofitBuilder = Retrofit.Builder()
-            .addConverterFactory(GsonConverterFactory.create())
+    private fun setUpRetrofit(){
+        api = Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
+    }
 
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val response = retrofitBuilder.getBreedNames().awaitResponse()
-                if (response.isSuccessful){
-                    val responseData = response.body()!!
-                    Log.d(TAG, responseData.toString())
+    private fun getBreedNames() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = api.getBreedNames()
 
-                    val imageUrl = responseData[0].image.url
-                    val breedName = responseData[0].name
-                    val myStringBuilder = StringBuilder()
+            withContext(Dispatchers.Main) {
+                try {
+                    if (response.isSuccessful && response.body() != null) {
+                        val responseBody = response.body()!!
+                        Log.d(TAG, responseBody.toString())
 
-                    withContext(Dispatchers.Main){
-                        Picasso.with(baseContext).load(imageUrl).into(findViewById<ImageView>(R.id.catImage))
-                        findViewById<TextView>(R.id.breedName).text = breedName
-
-//                        for (data in responseData){
-//                            myStringBuilder.append(data.name)
-//                            myStringBuilder.append("\n")
-//                        }
-
-//                        findViewById<TextView>(R.id.breedName).text = myStringBuilder
+                        breeds.addAll(responseBody)
+                        breedsAdapter.notifyDataSetChanged()
                     }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        applicationContext,
-                        "Looks like something went wrong",
-                        Toast.LENGTH_SHORT
-                    )
+                } catch (e: Exception) {
+                    showErrorMessage(e)
                 }
             }
         }
     }
+
+    private fun showErrorMessage(e: Exception) {
+        Toast.makeText(
+            applicationContext,
+            "Looks like something went wrong",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        Log.e(TAG, e.toString())
+    }
+
+    //    private fun showCatImages() {
+//        val responseBody = response.body()!!
+//        Log.d(TAG, responseBody.toString())
+//
+//        // TODO display multiple images (not just the first one)
+//        val imageUrl = responseBody[0].image.url
+//        val breedName = responseBody[0].name
+//
+//        Picasso.with(baseContext).load(imageUrl).into(findViewById<ImageView>(R.id.catImage))
+//        findViewById<TextView>(R.id.breedName).text = breedName
+//    }
 }
