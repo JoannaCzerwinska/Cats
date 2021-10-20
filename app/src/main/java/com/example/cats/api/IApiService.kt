@@ -4,7 +4,7 @@ import com.example.cats.model.BreedsItem
 import retrofit2.Response
 import retrofit2.http.GET
 
-interface ApiService {
+interface IApiService {
 
     @GET("v1/breeds")
     suspend fun getBreedNames(): Response<List<BreedsItem>>

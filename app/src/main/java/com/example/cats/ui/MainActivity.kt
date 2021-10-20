@@ -1,4 +1,4 @@
-package com.example.cats
+package com.example.cats.ui
 
 import android.os.Bundle
 import android.util.Log
@@ -6,23 +6,26 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cats.api.ApiService
+import com.example.cats.BreedAdapter
+import com.example.cats.R
+import com.example.cats.api.IApiService
 import com.example.cats.model.BreedsItem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var apiService: IApiService
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     private lateinit var recyclerView: RecyclerView
     private lateinit var breedsAdapter: BreedAdapter
-    private lateinit var api: ApiService
 
     private var breeds: ArrayList<BreedsItem> = arrayListOf()
+    private var job: Job? = null
 
     companion object {
         const val BASE_URL = "https://api.thecatapi.com/"
@@ -43,21 +46,12 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView.adapter = breedsAdapter
 
-        setUpRetrofit()
         getBreedNames()
     }
 
-    private fun setUpRetrofit(){
-        api = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
-    }
-
     private fun getBreedNames() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = api.getBreedNames()
+        job = CoroutineScope(Dispatchers.IO).launch {
+            val response = apiService.getBreedNames()
 
             withContext(Dispatchers.Main) {
                 try {
@@ -70,6 +64,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 } catch (e: Exception) {
                     showErrorMessage(e)
+                    job?.cancel()
                 }
             }
         }
