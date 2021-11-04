@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cats.BreedAdapter
+import com.example.cats.CoroutineDispatcherProvider
 import com.example.cats.R
 import com.example.cats.api.IApiService
 import com.example.cats.model.BreedsItem
@@ -19,6 +19,8 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var apiService: IApiService
+    @Inject
+    lateinit var coroutineDispatcher: CoroutineDispatcherProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     private lateinit var recyclerView: RecyclerView
@@ -28,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     private var job: Job? = null
 
     companion object {
-        const val BASE_URL = "https://api.thecatapi.com/"
         const val TAG = "MainActivity"
     }
 
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.breedsList)
 
-        breedsAdapter = BreedAdapter(breeds)
+        breedsAdapter = BreedAdapter()
 
         // responsible for measuring and positioning item views
         recyclerView.layoutManager =
@@ -49,8 +50,13 @@ class MainActivity : AppCompatActivity() {
         getBreedNames()
     }
 
+    override fun onStop() {
+        super.onStop()
+        job?.cancel()
+    }
+
     private fun getBreedNames() {
-        job = CoroutineScope(Dispatchers.IO).launch {
+        job = coroutineDispatcher.launch {
             val response = apiService.getBreedNames()
 
             withContext(Dispatchers.Main) {
@@ -60,11 +66,10 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, responseBody.toString())
 
                         breeds.addAll(responseBody)
-                        breedsAdapter.notifyDataSetChanged()
+                        breedsAdapter.setAdapterData(breeds)
                     }
                 } catch (e: Exception) {
                     showErrorMessage(e)
-                    job?.cancel()
                 }
             }
         }
