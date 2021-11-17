@@ -6,12 +6,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cats.CoroutineDispatcherProvider
 import com.example.cats.R
 import com.example.cats.api.IApiService
 import com.example.cats.model.BreedsItem
+import com.example.cats.utils.CoroutineContextProvider
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -20,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var apiService: IApiService
     @Inject
-    lateinit var coroutineDispatcher: CoroutineDispatcherProvider
+    lateinit var coroutineContextProvider: CoroutineContextProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     private lateinit var recyclerView: RecyclerView
@@ -56,10 +59,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getBreedNames() {
-        job = coroutineDispatcher.launch {
+        job = CoroutineScope(coroutineContextProvider.io).launch {
             val response = apiService.getBreedNames()
 
-            withContext(Dispatchers.Main) {
+            withContext(coroutineContextProvider.main) {
                 try {
                     if (response.isSuccessful && response.body() != null) {
                         val responseBody = response.body()!!
