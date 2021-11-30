@@ -1,7 +1,8 @@
 package com.example.cats.di
 
 import com.example.cats.api.IApiService
-import com.example.cats.utils.CoroutineContextProvider
+import com.example.cats.utils.CoroutineDispatcherProvider
+import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,5 +27,5 @@ object AppModule {
     }
 
     @Provides
-    fun provideCoroutineContextProvider(): CoroutineContextProvider = CoroutineContextProvider()
+    fun provideCoroutineDispatcherProvider(): CoroutineDispatcherProvider = DefaultCoroutineDispatcherProvider()
 }

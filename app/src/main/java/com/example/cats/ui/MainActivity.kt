@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.cats.R
 import com.example.cats.api.IApiService
 import com.example.cats.model.BreedsItem
-import com.example.cats.utils.CoroutineContextProvider
+import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var apiService: IApiService
     @Inject
-    lateinit var coroutineContextProvider: CoroutineContextProvider
+    lateinit var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     private lateinit var recyclerView: RecyclerView
@@ -59,10 +59,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getBreedNames() {
-        job = CoroutineScope(coroutineContextProvider.io).launch {
+        job = CoroutineScope(defaultCoroutineDispatcherProvider.ioDispatcher()).launch {
             val response = apiService.getBreedNames()
 
-            withContext(coroutineContextProvider.main) {
+            withContext(defaultCoroutineDispatcherProvider.mainDispatcher()) {
                 try {
                     if (response.isSuccessful && response.body() != null) {
                         val responseBody = response.body()!!
