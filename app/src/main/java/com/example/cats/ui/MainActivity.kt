@@ -1,4 +1,4 @@
-package com.example.cats
+package com.example.cats.ui
 
 import android.os.Bundle
 import android.util.Log
@@ -6,26 +6,33 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cats.api.ApiService
+import com.example.cats.R
+import com.example.cats.api.IApiService
 import com.example.cats.model.BreedsItem
+import com.example.cats.utils.DefaultCoroutineDispatcherProvider
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var apiService: IApiService
+    @Inject
+    lateinit var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     private lateinit var recyclerView: RecyclerView
     private lateinit var breedsAdapter: BreedAdapter
-    private lateinit var api: ApiService
 
     private var breeds: ArrayList<BreedsItem> = arrayListOf()
+    private var job: Job? = null
 
     companion object {
-        const val BASE_URL = "https://api.thecatapi.com/"
         const val TAG = "MainActivity"
     }
 
@@ -35,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.breedsList)
 
-        breedsAdapter = BreedAdapter(breeds)
+        breedsAdapter = BreedAdapter()
 
         // responsible for measuring and positioning item views
         recyclerView.layoutManager =
@@ -43,30 +50,26 @@ class MainActivity : AppCompatActivity() {
 
         recyclerView.adapter = breedsAdapter
 
-        setUpRetrofit()
         getBreedNames()
     }
 
-    private fun setUpRetrofit(){
-        api = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
+    override fun onStop() {
+        super.onStop()
+        job?.cancel()
     }
 
     private fun getBreedNames() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = api.getBreedNames()
+        job = CoroutineScope(defaultCoroutineDispatcherProvider.ioDispatcher()).launch {
+            val response = apiService.getBreedNames()
 
-            withContext(Dispatchers.Main) {
+            withContext(defaultCoroutineDispatcherProvider.mainDispatcher()) {
                 try {
                     if (response.isSuccessful && response.body() != null) {
                         val responseBody = response.body()!!
                         Log.d(TAG, responseBody.toString())
 
                         breeds.addAll(responseBody)
-                        breedsAdapter.notifyDataSetChanged()
+                        breedsAdapter.setAdapterData(breeds)
                     }
                 } catch (e: Exception) {
                     showErrorMessage(e)

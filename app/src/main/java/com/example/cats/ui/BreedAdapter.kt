@@ -1,14 +1,17 @@
-package com.example.cats
+package com.example.cats.ui
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.cats.R
 import com.example.cats.model.BreedsItem
 
-class BreedAdapter(private val breeds: List<BreedsItem>) :
+class BreedAdapter() :
     RecyclerView.Adapter<BreedAdapter.ViewHolder>() {
+
+    private var breeds: List<BreedsItem> = arrayListOf()
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val breedName: TextView = itemView.findViewById(R.id.breedName)
@@ -29,5 +32,10 @@ class BreedAdapter(private val breeds: List<BreedsItem>) :
 
         viewHolder.breedName.text = breed.name
 //        viewHolder.catImage.visibility = View.VISIBLE
+    }
+
+    internal fun setAdapterData(newBreedsList: List<BreedsItem>){
+        breeds = newBreedsList
+        notifyDataSetChanged()
     }
 }
