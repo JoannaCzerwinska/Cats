@@ -2,13 +2,10 @@ package com.example.cats.ui
 
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.cats.R
 import com.example.cats.api.IApiService
-import com.example.cats.model.BreedsItem
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -18,19 +15,19 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), BreedAdapterViewMvc.Listener {
 
     @Inject
     lateinit var apiService: IApiService
+
     @Inject
     lateinit var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var breedsAdapter: BreedAdapter
+    private lateinit var breedsAdapterViewMvc: BreedAdapterViewMvc
 
-    private var breeds: ArrayList<BreedsItem> = arrayListOf()
     private var job: Job? = null
+    private var isDataLoaded = false
 
     companion object {
         const val TAG = "MainActivity"
@@ -38,38 +35,34 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        recyclerView = findViewById(R.id.breedsList)
+        breedsAdapterViewMvc = BreedAdapterViewMvc(LayoutInflater.from(this), null)
+        setContentView(breedsAdapterViewMvc.rootView)
+    }
 
-        breedsAdapter = BreedAdapter()
+    override fun onStart() {
+        super.onStart()
+        breedsAdapterViewMvc.registerListener(this)
 
-        // responsible for measuring and positioning item views
-        recyclerView.layoutManager =
-            LinearLayoutManager(applicationContext, LinearLayoutManager.VERTICAL, false)
-
-        recyclerView.adapter = breedsAdapter
-
-        getBreedNames()
+        if (!isDataLoaded) {
+            getBreedNames()
+        }
     }
 
     override fun onStop() {
         super.onStop()
+        breedsAdapterViewMvc.unregisterListener(this)
         job?.cancel()
     }
 
     private fun getBreedNames() {
         job = CoroutineScope(defaultCoroutineDispatcherProvider.ioDispatcher()).launch {
-            val response = apiService.getBreedNames()
-
             withContext(defaultCoroutineDispatcherProvider.mainDispatcher()) {
                 try {
+                    val response = apiService.getBreedNames()
                     if (response.isSuccessful && response.body() != null) {
-                        val responseBody = response.body()!!
-                        Log.d(TAG, responseBody.toString())
-
-                        breeds.addAll(responseBody)
-                        breedsAdapter.setAdapterData(breeds)
+                        breedsAdapterViewMvc.bindBreeds(response.body()!!)
+                        isDataLoaded = true
                     }
                 } catch (e: Exception) {
                     showErrorMessage(e)
@@ -86,6 +79,10 @@ class MainActivity : AppCompatActivity() {
         ).show()
 
         Log.e(TAG, e.toString())
+    }
+
+    override fun loadBreedsData() {
+        getBreedNames()
     }
 
     //    private fun showCatImages() {
