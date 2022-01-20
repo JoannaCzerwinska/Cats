@@ -25,17 +25,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
@@ -48,17 +50,23 @@ dependencies {
     // gson
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     // coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3'
     // picasso
     implementation 'com.squareup.picasso:picasso:2.5.2'
     // hilt
     implementation "com.google.dagger:hilt-android:2.38.1"
-    // mockito
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.10.0'
+    // nhaarman mockito
+    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+    androidTestImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+    // mockito inline
+    testImplementation 'org.mockito:mockito-inline:2.13.0'
+    testImplementation 'net.bytebuddy:byte-buddy-agent:1.11.0'
+    // mockito core
+    testImplementation 'org.mockito:mockito-core:3.10.0'
+    androidTestImplementation 'org.mockito:mockito-android:3.10.0'
     // junit
-    testImplementation(platform("org.junit:junit-bom:5.8.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation 'junit:junit:4.13.2'
     // kapt
     kapt "com.google.dagger:hilt-compiler:2.38.1"
 }

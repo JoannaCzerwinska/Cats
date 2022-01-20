@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cats.api.IApiService
+import com.example.cats.breeds.FetchBreedsUseCase
+import com.example.cats.model.BreedsItem
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -26,12 +28,15 @@ class MainActivity : AppCompatActivity() {
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     private lateinit var breedsAdapter: BreedAdapter
+    private lateinit var fetchBreedsUseCase: FetchBreedsUseCase
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var isDataLoaded = false
 
+    var breeds: ArrayList<BreedsItem> = arrayListOf()
+
     companion object {
-        const val TAG = "MainActivity"
+        const val TAG = "MainActivity Response Body"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         coroutineScope.coroutineContext.cancelChildren()
     }
 
-    private fun loadBreedsData() {
+    fun loadBreedsData() {
         coroutineScope.launch {
             try {
                 val response = apiService.getBreedNames()
@@ -61,7 +66,7 @@ class MainActivity : AppCompatActivity() {
                     breedsAdapter.bindBreeds(response.body()!!)
                     isDataLoaded = true
                 }
-            } catch (e: java.lang.Exception) {
+            } catch (e: Exception) {
                 showErrorMessage(e)
             }
         }
