@@ -11,34 +11,23 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.cats.R
 import com.example.cats.model.BreedsItem
 
-class BreedAdapterViewMvc(
+class BreedAdapter(
     layoutInflater: LayoutInflater,
     parent: ViewGroup?
 ) {
-
-    interface Listener {
-        fun loadBreedsData()
-    }
-
     private val recyclerView: RecyclerView
     private val breedsAdapter: BreedAdapter
-    private val listeners = HashSet<Listener>()
     private val context: Context get() = rootView.context
 
     val rootView: View = layoutInflater.inflate(R.layout.activity_main, parent, false)
 
     init {
-
         recyclerView = findViewById(R.id.breedsList)
         breedsAdapter = BreedAdapter()
 
         // responsible for measuring and positioning item views
         recyclerView.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-
-        for (listener in listeners) {
-            listener.loadBreedsData()
-        }
 
         recyclerView.adapter = breedsAdapter
     }
@@ -47,15 +36,7 @@ class BreedAdapterViewMvc(
         breedsAdapter.setAdapterData(breeds)
     }
 
-    fun registerListener(listener: Listener) {
-        listeners.add(listener)
-    }
-
-    fun unregisterListener(listener: Listener) {
-        listeners.remove(listener)
-    }
-
-    fun <T : View?> findViewById(@IdRes id: Int): T {
+    private fun <T : View?> findViewById(@IdRes id: Int): T {
         return rootView.findViewById<T>(id)
     }
 

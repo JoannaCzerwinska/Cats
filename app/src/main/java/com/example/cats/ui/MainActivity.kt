@@ -9,13 +9,14 @@ import com.example.cats.api.IApiService
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), BreedAdapterViewMvc.Listener {
+class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var apiService: IApiService
@@ -24,9 +25,9 @@ class MainActivity : AppCompatActivity(), BreedAdapterViewMvc.Listener {
     lateinit var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
-    private lateinit var breedsAdapterViewMvc: BreedAdapterViewMvc
+    private lateinit var breedsAdapter: BreedAdapter
 
-    private var job: Job? = null
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var isDataLoaded = false
 
     companion object {
@@ -36,37 +37,32 @@ class MainActivity : AppCompatActivity(), BreedAdapterViewMvc.Listener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        breedsAdapterViewMvc = BreedAdapterViewMvc(LayoutInflater.from(this), null)
-        setContentView(breedsAdapterViewMvc.rootView)
+        breedsAdapter = BreedAdapter(LayoutInflater.from(this), null)
+        setContentView(breedsAdapter.rootView)
     }
 
     override fun onStart() {
         super.onStart()
-        breedsAdapterViewMvc.registerListener(this)
-
         if (!isDataLoaded) {
-            getBreedNames()
+            loadBreedsData()
         }
     }
 
     override fun onStop() {
         super.onStop()
-        breedsAdapterViewMvc.unregisterListener(this)
-        job?.cancel()
+        coroutineScope.coroutineContext.cancelChildren()
     }
 
-    private fun getBreedNames() {
-        job = CoroutineScope(defaultCoroutineDispatcherProvider.ioDispatcher()).launch {
-            withContext(defaultCoroutineDispatcherProvider.mainDispatcher()) {
-                try {
-                    val response = apiService.getBreedNames()
-                    if (response.isSuccessful && response.body() != null) {
-                        breedsAdapterViewMvc.bindBreeds(response.body()!!)
-                        isDataLoaded = true
-                    }
-                } catch (e: Exception) {
-                    showErrorMessage(e)
+    private fun loadBreedsData() {
+        coroutineScope.launch {
+            try {
+                val response = apiService.getBreedNames()
+                if (response.isSuccessful && response.body() != null) {
+                    breedsAdapter.bindBreeds(response.body()!!)
+                    isDataLoaded = true
                 }
+            } catch (e: java.lang.Exception) {
+                showErrorMessage(e)
             }
         }
     }
@@ -81,11 +77,7 @@ class MainActivity : AppCompatActivity(), BreedAdapterViewMvc.Listener {
         Log.e(TAG, e.toString())
     }
 
-    override fun loadBreedsData() {
-        getBreedNames()
-    }
-
-    //    private fun showCatImages() {
+//        private fun showCatImages() {
 //        val responseBody = response.body()!!
 //        Log.d(TAG, responseBody.toString())
 //
