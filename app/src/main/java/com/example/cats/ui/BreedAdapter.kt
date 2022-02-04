@@ -1,41 +1,74 @@
 package com.example.cats.ui
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.IdRes
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cats.R
 import com.example.cats.model.BreedsItem
 
-class BreedAdapter() :
-    RecyclerView.Adapter<BreedAdapter.ViewHolder>() {
+class BreedAdapter(
+    layoutInflater: LayoutInflater,
+    parent: ViewGroup?
+) {
+    private val recyclerView: RecyclerView
+    private val breedsAdapter: BreedAdapter
+    private val context: Context get() = rootView.context
 
-    private var breeds: List<BreedsItem> = arrayListOf()
+    val rootView: View = layoutInflater.inflate(R.layout.activity_main, parent, false)
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val breedName: TextView = itemView.findViewById(R.id.breedName)
-//        val catImage: ImageView = view.findViewById(R.id.catImage)
+    init {
+        recyclerView = findViewById(R.id.breedsList)
+        breedsAdapter = BreedAdapter()
+
+        // responsible for measuring and positioning item views
+        recyclerView.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+
+        recyclerView.adapter = breedsAdapter
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.breed_display, parent, false)
-
-        return ViewHolder(view)
+    fun bindBreeds(breeds: List<BreedsItem>){
+        breedsAdapter.setAdapterData(breeds)
     }
 
-    override fun getItemCount() = breeds.size
-
-    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        val breed = breeds[position]
-
-        viewHolder.breedName.text = breed.name
-//        viewHolder.catImage.visibility = View.VISIBLE
+    private fun <T : View?> findViewById(@IdRes id: Int): T {
+        return rootView.findViewById<T>(id)
     }
 
-    internal fun setAdapterData(newBreedsList: List<BreedsItem>){
-        breeds = newBreedsList
-        notifyDataSetChanged()
+    class BreedAdapter :
+        RecyclerView.Adapter<BreedAdapter.ViewHolder>() {
+
+        private var breeds: List<BreedsItem> = arrayListOf()
+
+        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val breedName: TextView = itemView.findViewById(R.id.breedName)
+            //        val catImage: ImageView = view.findViewById(R.id.catImage)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.breed_display, parent, false)
+
+            return ViewHolder(view)
+        }
+
+        override fun getItemCount() = breeds.size
+
+        override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+            val breed = breeds[position]
+
+            viewHolder.breedName.text = breed.name
+            //        viewHolder.catImage.visibility = View.VISIBLE
+        }
+
+        internal fun setAdapterData(newBreedsList: List<BreedsItem>) {
+            breeds = ArrayList(newBreedsList)
+            notifyDataSetChanged()
+        }
     }
 }
