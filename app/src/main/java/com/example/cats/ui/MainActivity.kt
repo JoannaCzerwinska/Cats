@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cats.api.IApiService
 import com.example.cats.breeds.FetchBreedsUseCase
-import com.example.cats.model.BreedsItem
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -27,13 +26,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
-    private lateinit var breedsAdapter: BreedAdapter
-    private lateinit var fetchBreedsUseCase: FetchBreedsUseCase
+    lateinit var breedsAdapter: BreedAdapter
+    lateinit var fetchBreedsUseCase: FetchBreedsUseCase
 
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var isDataLoaded = false
-
-    var breeds: ArrayList<BreedsItem> = arrayListOf()
+    val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    var isDataLoaded = false
 
     companion object {
         const val TAG = "MainActivity Response Body"
@@ -44,6 +41,8 @@ class MainActivity : AppCompatActivity() {
 
         breedsAdapter = BreedAdapter(LayoutInflater.from(this), null)
         setContentView(breedsAdapter.rootView)
+
+        fetchBreedsUseCase = FetchBreedsUseCase()
     }
 
     override fun onStart() {
@@ -61,25 +60,25 @@ class MainActivity : AppCompatActivity() {
     fun loadBreedsData() {
         coroutineScope.launch {
             try {
-                val response = apiService.getBreedNames()
-                if (response.isSuccessful && response.body() != null) {
-                    breedsAdapter.bindBreeds(response.body()!!)
-                    isDataLoaded = true
+                when (val response = fetchBreedsUseCase.getBreedNames()) {
+                    is FetchBreedsUseCase.Result.Success -> {
+                        breedsAdapter.bindBreeds(response.breedNames)
+                        isDataLoaded = true
+                    }
+                    is FetchBreedsUseCase.Result.Failure -> showErrorMessage()
                 }
             } catch (e: Exception) {
-                showErrorMessage(e)
+                Log.e(TAG, e.toString())
             }
         }
     }
 
-    private fun showErrorMessage(e: Exception) {
+    private fun showErrorMessage() {
         Toast.makeText(
             applicationContext,
             "Looks like something went wrong",
             Toast.LENGTH_SHORT
         ).show()
-
-        Log.e(TAG, e.toString())
     }
 
 //        private fun showCatImages() {

@@ -9,9 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class FetchBreedsUseCase {
-    var breeds: ArrayList<BreedsItem> = arrayListOf()
     private val defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider = DefaultCoroutineDispatcherProvider()
-
     private val retrofit = Retrofit.Builder()
         .baseUrl(Constants.BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
