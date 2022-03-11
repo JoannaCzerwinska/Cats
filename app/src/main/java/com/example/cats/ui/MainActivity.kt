@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -29,7 +28,6 @@ class MainActivity : BaseActivity() {
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     lateinit var breedsAdapter: BreedAdapter
     lateinit var fetchBreedsUseCase: FetchBreedsUseCase
-    lateinit var retrofit : Retrofit
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     var isDataLoaded = false

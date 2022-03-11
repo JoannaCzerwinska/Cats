@@ -3,7 +3,6 @@ package com.example.cats.common.composition
 import androidx.annotation.UiThread
 import com.example.cats.Constants
 import com.example.cats.api.IApiService
-import com.example.cats.breeds.FetchBreedsUseCase
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -18,10 +17,7 @@ class AppCompositionRoot {
             .build()
     }
 
-    private val apiService: IApiService by lazy {
+    val apiService: IApiService by lazy {
         retrofit.create(IApiService::class.java)
     }
-
-    // get() always gets a new instance of the use case
-    val fetchBreedsUseCase get() = FetchBreedsUseCase(apiService)
 }
