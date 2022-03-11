@@ -1,21 +1,12 @@
 package com.example.cats.breeds
 
-import com.example.cats.Constants
 import com.example.cats.api.IApiService
 import com.example.cats.model.BreedsItem
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
-class FetchBreedsUseCase {
+class FetchBreedsUseCase(private val apiService: IApiService) {
     private val defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider = DefaultCoroutineDispatcherProvider()
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(Constants.BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val apiService: IApiService = retrofit.create(IApiService::class.java)
 
     sealed class Result {
         class Success(val breedNames: List<BreedsItem>) : Result()

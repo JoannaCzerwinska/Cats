@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.example.cats.api.IApiService
 import com.example.cats.breeds.FetchBreedsUseCase
+import com.example.cats.ui.common.activities.BaseActivity
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -14,10 +14,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
+import retrofit2.Retrofit
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     @Inject
     lateinit var apiService: IApiService
@@ -28,8 +29,9 @@ class MainActivity : AppCompatActivity() {
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
     lateinit var breedsAdapter: BreedAdapter
     lateinit var fetchBreedsUseCase: FetchBreedsUseCase
+    lateinit var retrofit : Retrofit
 
-    val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     var isDataLoaded = false
 
     companion object {
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         breedsAdapter = BreedAdapter(LayoutInflater.from(this), null)
         setContentView(breedsAdapter.rootView)
 
-        fetchBreedsUseCase = FetchBreedsUseCase()
+        fetchBreedsUseCase = compositionRoot.fetchBreedsUseCase
     }
 
     override fun onStart() {
