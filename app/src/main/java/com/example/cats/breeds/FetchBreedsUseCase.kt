@@ -6,7 +6,7 @@ import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import kotlinx.coroutines.withContext
 
 class FetchBreedsUseCase(private val apiService: IApiService) {
-    private val defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider = DefaultCoroutineDispatcherProvider()
+    var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider = DefaultCoroutineDispatcherProvider()
 
     sealed class Result {
         class Success(val breedNames: List<BreedsItem>) : Result()
