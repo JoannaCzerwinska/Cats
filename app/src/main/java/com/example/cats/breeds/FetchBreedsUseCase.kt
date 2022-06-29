@@ -9,7 +9,7 @@ class FetchBreedsUseCase(private val apiService: IApiService) {
     var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider = DefaultCoroutineDispatcherProvider()
 
     sealed class Result {
-        class Success(val breedNames: List<BreedsItem>) : Result()
+        data class Success(val breedNames: List<BreedsItem>) : Result()
         object Failure : Result()
     }
 
