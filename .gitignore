@@ -11,7 +11,7 @@
 /.idea/gradle.xml
 /.idea/jarRepositories.xml
 /.idea/misc.xml
-/.idea/vcs.xml
+/.idea/vcs.xmlgit stash pop
 .DS_Store
 /build
 /captures

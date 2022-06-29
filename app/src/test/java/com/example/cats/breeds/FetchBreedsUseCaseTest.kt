@@ -2,59 +2,62 @@ package com.example.cats.breeds
 
 import com.example.cats.api.IApiService
 import com.example.cats.model.BreedsItem
-import com.example.cats.utils.DefaultCoroutineDispatcherProvider
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.setMain
+import org.hamcrest.CoreMatchers.instanceOf
+import org.hamcrest.MatcherAssert.assertThat
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import retrofit2.Response
 
+@ExperimentalCoroutinesApi
 class FetchBreedsUseCaseTest {
 
     @Mock
-    private lateinit var mockDefaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider
-
-    @Mock
     private lateinit var mockApiService: IApiService
-
-    @Mock
-    private lateinit var mockBreeds: List<BreedsItem>
 
     private lateinit var fetchBreedsUseCase : FetchBreedsUseCase
 
     @Before
     fun setUp(){
+        MockitoAnnotations.openMocks(this)
         fetchBreedsUseCase = FetchBreedsUseCase(mockApiService)
-
-        fetchBreedsUseCase.defaultCoroutineDispatcherProvider = mockDefaultCoroutineDispatcherProvider
     }
 
     @Test
-    fun whenGetBreedNamesCallSuccessful_thenReturnSuccess(): Unit = runBlocking {
-        // given
-        whenever(mockApiService.getBreedNames().isSuccessful).thenReturn(true)
-        whenever(mockApiService.getBreedNames().body()).thenReturn(mockBreeds)
+    fun whenGetBreedNamesCallIsSuccessful_thenReturnSuccess(): Unit = runBlocking {
+        Dispatchers.setMain(Dispatchers.Unconfined)
 
-        // when
+        val mockBreed = BreedsItem(2, "Fake description", "Fake id", 2, "2", 12, "Cat name")
+        val mockBreedsList: List<BreedsItem> = arrayListOf(mockBreed)
+        val response: Response<List<BreedsItem>> = Response.success(200, mockBreedsList)
+
+        whenever(mockApiService.getBreedNames()).thenReturn(response)
+
         val result = fetchBreedsUseCase.getBreedNames()
 
-        // then
-        verify(result).FetchBreedsUseCase.Result.Success
+        assertThat(result, instanceOf(FetchBreedsUseCase.Result.Success::class.java))
     }
 
     @Test
-    fun whenGetBreedNamesCallSuccessful_thenReturnFailure(): Unit = runBlocking {
-        // given
-        whenever(mockApiService.getBreedNames().isSuccessful).thenReturn(false)
-        whenever(mockApiService.getBreedNames().body()).thenReturn(mockBreeds)
+    fun whenGetBreedNamesCallIsNotSuccessful_thenReturnFailure(): Unit = runBlocking {
+        Dispatchers.setMain(Dispatchers.Unconfined)
 
-        // when
+        val response: Response<List<BreedsItem>> = Response.error(404, "{}"
+            .toResponseBody("application/json; charset=utf-8".toMediaType())
+        )
+
+        whenever(mockApiService.getBreedNames()).thenReturn(response)
+
         val result = fetchBreedsUseCase.getBreedNames()
 
-        // then
-//        assertThat(result).isInstanceOf(FetchBreedsUseCase.Result.Failure)
-        verify(result).FetchBreedsUseCase.Result.Failure
+        assertThat(result, instanceOf(FetchBreedsUseCase.Result.Failure::class.java))
     }
 }
