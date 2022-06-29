@@ -1,5 +1,6 @@
 package com.example.cats.di
 
+import com.example.cats.Constants
 import com.example.cats.api.IApiService
 import com.example.cats.utils.CoroutineDispatcherProvider
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
@@ -20,7 +21,7 @@ object AppModule {
     @Provides
     fun provideIApiService() : IApiService {
         return Retrofit.Builder()
-            .baseUrl(IApiService.BASE_URL)
+            .baseUrl(Constants.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(IApiService::class.java)
