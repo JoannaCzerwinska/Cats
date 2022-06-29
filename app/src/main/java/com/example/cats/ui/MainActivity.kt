@@ -4,8 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.example.cats.api.IApiService
+import com.example.cats.breeds.FetchBreedsUseCase
+import com.example.cats.ui.common.activities.BaseActivity
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     @Inject
     lateinit var apiService: IApiService
@@ -25,13 +26,14 @@ class MainActivity : AppCompatActivity() {
     lateinit var defaultCoroutineDispatcherProvider: DefaultCoroutineDispatcherProvider
 
     // lateinit var will be set when onCreate is called (not when main activity is initialised)
-    private lateinit var breedsAdapter: BreedAdapter
+    lateinit var breedsAdapter: BreedAdapter
+    lateinit var fetchBreedsUseCase: FetchBreedsUseCase
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var isDataLoaded = false
+    var isDataLoaded = false
 
     companion object {
-        const val TAG = "MainActivity"
+        const val TAG = "MainActivity Response Body"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +41,8 @@ class MainActivity : AppCompatActivity() {
 
         breedsAdapter = BreedAdapter(LayoutInflater.from(this), null)
         setContentView(breedsAdapter.rootView)
+
+        fetchBreedsUseCase = compositionRoot.fetchBreedsUseCase
     }
 
     override fun onStart() {
@@ -56,25 +60,25 @@ class MainActivity : AppCompatActivity() {
     private fun loadBreedsData() {
         coroutineScope.launch {
             try {
-                val response = apiService.getBreedNames()
-                if (response.isSuccessful && response.body() != null) {
-                    breedsAdapter.bindBreeds(response.body()!!)
-                    isDataLoaded = true
+                when (val response = fetchBreedsUseCase.getBreedNames()) {
+                    is FetchBreedsUseCase.Result.Success -> {
+                        breedsAdapter.bindBreeds(response.breedNames)
+                        isDataLoaded = true
+                    }
+                    is FetchBreedsUseCase.Result.Failure -> showErrorMessage()
                 }
-            } catch (e: java.lang.Exception) {
-                showErrorMessage(e)
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
             }
         }
     }
 
-    private fun showErrorMessage(e: Exception) {
+    private fun showErrorMessage() {
         Toast.makeText(
             applicationContext,
             "Looks like something went wrong",
             Toast.LENGTH_SHORT
         ).show()
-
-        Log.e(TAG, e.toString())
     }
 
 //        private fun showCatImages() {
