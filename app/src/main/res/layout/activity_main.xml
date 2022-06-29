@@ -2,17 +2,60 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:id="@+id/activity_main"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    tools:context=".ui.MainActivity">
+    tools:context=".view.MainActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/breedsList"
+    <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/voteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vote for a cat image"
+                app:layout_constraintBottom_toTopOf="@+id/breedName"
+                app:layout_constraintLeft_toLeftOf="@+id/parent"
+                app:layout_constraintRight_toRightOf="@+id/parent"
+                app:layout_constraintTop_toTopOf="@+id/parent" />
+
+            <TextView
+                android:id="@+id/breedName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Breed name:"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/breedDescription"
+                app:layout_constraintLeft_toLeftOf="@+id/parent"
+                app:layout_constraintRight_toRightOf="@+id/parent"
+                app:layout_constraintTop_toBottomOf="@+id/voteButton" />
+
+            <TextView
+                android:id="@+id/breedDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Breed description"
+                android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/activity_main"
+                app:layout_constraintLeft_toLeftOf="@+id/parent"
+                app:layout_constraintRight_toRightOf="@+id/parent"
+                app:layout_constraintTop_toBottomOf="@+id/breedName" />
+        </LinearLayout>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
