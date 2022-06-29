@@ -57,7 +57,7 @@ class MainActivity : BaseActivity() {
         coroutineScope.coroutineContext.cancelChildren()
     }
 
-    fun loadBreedsData() {
+    private fun loadBreedsData() {
         coroutineScope.launch {
             try {
                 when (val response = fetchBreedsUseCase.getBreedNames()) {
