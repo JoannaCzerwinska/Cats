@@ -69,6 +69,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     // kapt
     kapt "com.google.dagger:hilt-compiler:2.38.1"
+    // Dagger 2
+    implementation "com.google.dagger:dagger:$dagger2_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger2_version"
 }
 
 kapt {
