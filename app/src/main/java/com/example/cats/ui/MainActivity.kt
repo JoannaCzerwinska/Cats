@@ -8,7 +8,6 @@ import com.example.cats.api.IApiService
 import com.example.cats.breeds.FetchBreedsUseCase
 import com.example.cats.ui.common.activities.BaseActivity
 import com.example.cats.utils.DefaultCoroutineDispatcherProvider
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,7 +15,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
     @Inject
